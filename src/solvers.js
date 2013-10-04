@@ -114,33 +114,31 @@ window.countNQueensSolutions = function(n){
   var rowIndex = 0;
   var solutionsCount = 0;
   var breadcrumbArr = _(_.range(n)).map(function(){ return false; });
+
   var queenRecursive = function(colArr,majArr,minArr){
     if (rowIndex === n){
       return solutionsCount++;
     }
     for (var colIndex = 0; colIndex < n; colIndex++) {
-      if (colArr[colIndex]){
-        continue;
-      }else if(majArr[board._getFirstRowColumnIndexForMajorDiagonalOn(rowIndex,colIndex)]){
-        continue;
-      }else if(minArr[board._getFirstRowColumnIndexForMinorDiagonalOn(rowIndex,colIndex)]){
+      // check breadcrumb arrays (with ifs) and maybe attempt adding a queen (inside else)
+      if (colArr[colIndex] || majArr[board._getFirstRowColumnIndexForMajorDiagonalOn(rowIndex,colIndex)] || minArr[board._getFirstRowColumnIndexForMinorDiagonalOn(rowIndex,colIndex)]){
         continue;
       }else{
         board.togglePiece(rowIndex,colIndex);
-        if (board.hasAnyQueenConflictsOn(rowIndex, colIndex)){
-          board.togglePiece(rowIndex,colIndex);
-        }else{
-          colArr[colIndex] = true;
-          majArr[board._getFirstRowColumnIndexForMajorDiagonalOn(rowIndex,colIndex)] = true;
-          minArr[board._getFirstRowColumnIndexForMinorDiagonalOn(rowIndex,colIndex)] = true;
-          rowIndex++;
-          queenRecursive(colArr,majArr,minArr);
-          rowIndex--;
-          colArr[colIndex] = false;
-          majArr[board._getFirstRowColumnIndexForMajorDiagonalOn(rowIndex,colIndex)] = false;
-          minArr[board._getFirstRowColumnIndexForMinorDiagonalOn(rowIndex,colIndex)] = false;
-          board.togglePiece(rowIndex,colIndex);
-        }
+        colArr[colIndex] = true;
+        majArr[board._getFirstRowColumnIndexForMajorDiagonalOn(rowIndex,colIndex)] = true;
+        minArr[board._getFirstRowColumnIndexForMinorDiagonalOn(rowIndex,colIndex)] = true;
+
+        // move on to next row and continue recursive algorithm
+        rowIndex++;
+        queenRecursive(colArr,majArr,minArr);
+
+        // return from recursive call and prep for traversing rest of the row by reverting rowIndex and breadcrumb arrays
+        rowIndex--;
+        colArr[colIndex] = false;
+        majArr[board._getFirstRowColumnIndexForMajorDiagonalOn(rowIndex,colIndex)] = false;
+        minArr[board._getFirstRowColumnIndexForMinorDiagonalOn(rowIndex,colIndex)] = false;
+        board.togglePiece(rowIndex,colIndex);
       }
     }
   };
